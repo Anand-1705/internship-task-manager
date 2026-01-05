@@ -5,7 +5,7 @@ This project is designed for beginners to demonstrate core React concepts in a p
 
 ---
 
-## 🔹 Features
+##  Features
 
 - Add new internship tasks
 - View all tasks in a clean UI
@@ -15,7 +15,7 @@ This project is designed for beginners to demonstrate core React concepts in a p
 
 ---
 
-## 🔹 Tech Stack
+##  Tech Stack
 
 - React.js (Vite)
 - JavaScript (ES6)
@@ -24,7 +24,7 @@ This project is designed for beginners to demonstrate core React concepts in a p
 
 ---
 
-## 🔹 Pages
+##  Pages
 
 1. **Task List Page**
    - Displays all tasks
@@ -36,7 +36,7 @@ This project is designed for beginners to demonstrate core React concepts in a p
 
 ---
 
-## 🔹 Concepts Used
+##  Concepts Used
 
 - Functional Components
 - React Hooks (`useState`, `useEffect`)
