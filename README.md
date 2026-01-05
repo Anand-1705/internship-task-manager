@@ -3,7 +3,7 @@
 A simple and clean **React.js application** to manage internship-related tasks.  
 This project is designed for beginners to demonstrate core React concepts in a practical way.
 
----
+
 
 ##  Features
 
@@ -13,7 +13,7 @@ This project is designed for beginners to demonstrate core React concepts in a p
 - Delete tasks
 - Data stored using **Local Storage** (no backend required)
 
----
+
 
 ##  Tech Stack
 
@@ -22,7 +22,7 @@ This project is designed for beginners to demonstrate core React concepts in a p
 - CSS (Custom styling)
 - React Router DOM
 
----
+
 
 ##  Pages
 
@@ -34,7 +34,7 @@ This project is designed for beginners to demonstrate core React concepts in a p
 2. **Add Task Page**
    - Add new internship tasks with title & description
 
----
+
 
 ##  Concepts Used
 
@@ -45,10 +45,4 @@ This project is designed for beginners to demonstrate core React concepts in a p
 - Conditional Rendering
 - Basic CRUD Operations
 
----
 
-## 🔹 How to Run the Project Locally
-
-1. Clone the repository:
-```bash
-git clone https://github.com/Anand-1705/internship-task-manager.git
