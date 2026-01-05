@@ -1,4 +1,4 @@
-# Internship Task Manager 📝
+# Internship Task Manager 
 
 A simple and clean **React.js application** to manage internship-related tasks.  
 This project is designed for beginners to demonstrate core React concepts in a practical way.
