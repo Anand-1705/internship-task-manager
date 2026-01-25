@@ -1,25 +1,29 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addTask } from "../redux/taskSlice";
 
 function AddTask() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const newTask = {
+  await dispatch(
+    addTask({
       title,
       description,
-      completed: false,
-    };
+      status: false,
+      createdAt: new Date().toISOString(),
+    })
+  ).unwrap();   // waits until API finishes
 
-    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    localStorage.setItem("tasks", JSON.stringify([...tasks, newTask]));
-
-    navigate("/");
+  navigate("/");
   };
+
 
   return (
     <div className="container">

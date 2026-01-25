@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTasks, deleteTask, updateTask } from "../redux/taskSlice";
 import { Link } from "react-router-dom";
     //React Router helps navigate between pages without refreshing the browser
 function TaskList() {
     //I used useState to store and update task data dynamically in the UI.
-  const [tasks, setTasks] = useState([]);
+  const dispatch = useDispatch();                                           //redux state
+  const { list: tasks, loading } = useSelector((state) => state.tasks);     //redux state
+
   const [searchTerm, setSearchTerm] = useState("");//to store what user types in search box
   const [theme, setTheme] = useState(
   localStorage.getItem("theme") || "light");//adding theme
+  const [localTasks, setLocalTasks] = useState([]);
 
   const [editIndex, setEditIndex] = useState(null);
   const [editTask, setEditTask] = useState({
@@ -14,49 +19,54 @@ function TaskList() {
   description: "",
   });
   //Adding edit button
-  useEffect(() => {//I used useEffect to load tasks from Local Storage when the component mounts"
-    document.body.className = theme;
-    const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    const updatedTasks = savedTasks.map((task) => ({
-    ...task,
-    createdAt: task.createdAt || new Date().toISOString(),
-  }));
+  useEffect(() => { //to load from api
+  document.body.className = theme;
+  dispatch(fetchTasks());
+  }, [dispatch, theme]);
+  useEffect(() => {
+  setLocalTasks(tasks);
+  }, [tasks]);
 
-  setTasks(updatedTasks);
-  localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-}, [theme]);
+  const toggleStatus = (task) => {
+  dispatch(
+    updateTask({
+      id: task.id,
+      updatedData: { ...task, status: !task.status },
+    })
+  );
+};
 
-  const toggleStatus = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].completed = !updatedTasks[index].completed;
-    setTasks(updatedTasks);
-    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-  };
-
-  const deleteTask = (index) => {
-    const updatedTasks = tasks.filter((_, i) => i !== index);
-    setTasks(updatedTasks);
-    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-  };
+  const handleDelete = (id) => {
+  dispatch(deleteTask(id));
+};
 
   // SORTING FUNCTIONS 
   const sortByNewest = () => {
-    const sorted = [...tasks].sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    );
-    setTasks(sorted);};
+  const sorted = [...tasks].sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+    return dateB - dateA;
+  });
+  setLocalTasks(sorted);
+  };
+
 
   const sortByOldest = () => {
-    const sorted = [...tasks].sort(
-      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-    );
-    setTasks(sorted); };
+  const sorted = [...tasks].sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+    return dateA - dateB;
+  });
+  setLocalTasks(sorted);
+  };
+
 
   const sortByStatus = () => {
-    const sorted = [...tasks].sort(
-      (a, b) => a.completed - b.completed
-    );
-    setTasks(sorted);};
+  const sorted = [...localTasks].sort((a, b) => {
+    return a.status - b.status;
+  });
+  setLocalTasks(sorted);
+      };
       //Dropdown
       const handleSortChange = (e) => {
       const value = e.target.value;
@@ -69,7 +79,7 @@ function TaskList() {
         sortByStatus();
       }
     };
-    const filteredTasks = tasks.filter((task) =>
+    const filteredTasks = localTasks.filter((task) =>
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -123,7 +133,8 @@ function TaskList() {
       {tasks.length === 0 && <p>No tasks added yet.</p>}
 
       {filteredTasks.map((task, index) => (
-        <div key={index} className="task">
+       <div key={task.id} className="task">
+
         {/* add edit task */}
          {editIndex === index ? (
         <>
@@ -151,23 +162,27 @@ function TaskList() {
 
               {/*To show time on the task card*/}
           <p style={{ fontSize: "12px", color: "#777" }}>
-            Added on: {new Date(task.createdAt).toLocaleString()}
+            Added on:{" "}
+            {task.createdAt
+              ? new Date(task.createdAt).toLocaleString()
+              : "Not available"}
           </p>
+
 
           <span
             className={`status ${
-              task.completed ? "completed" : "pending"
+              task.status ? "completed" : "pending"
             }`}
           >
-            {task.completed ? "Completed" : "Pending"}
+            {task.status ? "Completed" : "Pending"}
           </span>
 
           <div className="task-buttons">
             <button
               className="complete-btn"
-              onClick={() => toggleStatus(index)}
+              onClick={() => toggleStatus(task)}
             >
-              {task.completed ? "Undo" : "Mark Complete"}
+              {task.status ? "Undo" : "Mark Complete"}
             </button>
             {/*adding edit button */}       
              {editIndex === index ? (
@@ -175,14 +190,16 @@ function TaskList() {
                 <button
                   className="complete-btn"
                   onClick={() => {
-                    const updatedTasks = [...tasks];
-                    updatedTasks[index] = {
-                      ...updatedTasks[index],
-                      title: editTask.title,
-                      description: editTask.description,
-                    };
-                    setTasks(updatedTasks);
-                    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+                    dispatch(
+                      updateTask({
+                        id: task.id,
+                        updatedData: {
+                          ...task,
+                          title: editTask.title,
+                          description: editTask.description,
+                        },
+                      })
+                    );
                     setEditIndex(null);
                   }}
                 >
@@ -213,7 +230,7 @@ function TaskList() {
 
             <button
               className="delete-btn"
-              onClick={() => deleteTask(index)}
+              onClick={() => handleDelete(task.id)}
             >
               Delete
             </button>
