@@ -1,13 +1,14 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-
-const API_URL = "https://69760224c0c36a2a994ffdb4.mockapi.io/tasks";
+import api from "../api/axiosInstance";
+import { retryRequest } from "../utils/retry";
 
 // 🔹 GET all tasks
 export const fetchTasks = createAsyncThunk(
   "tasks/fetchTasks",
   async () => {
-    const response = await axios.get(API_URL);
+    const response = await retryRequest(() =>
+      api.get("/tasks")
+    );
     return response.data;
   }
 );
@@ -16,7 +17,7 @@ export const fetchTasks = createAsyncThunk(
 export const addTask = createAsyncThunk(
   "tasks/addTask",
   async (task) => {
-    const response = await axios.post(API_URL, task);
+    const response = await api.post("/tasks", task);
     return response.data;
   }
 );
@@ -25,16 +26,16 @@ export const addTask = createAsyncThunk(
 export const deleteTask = createAsyncThunk(
   "tasks/deleteTask",
   async (id) => {
-    await axios.delete(`${API_URL}/${id}`);
+    await api.delete(`/tasks/${id}`);
     return id;
   }
 );
 
-// 🔹 UPDATE task (toggle status)
+// 🔹 UPDATE task
 export const updateTask = createAsyncThunk(
   "tasks/updateTask",
   async ({ id, updatedData }) => {
-    const response = await axios.put(`${API_URL}/${id}`, updatedData);
+    const response = await api.put(`/tasks/${id}`, updatedData);
     return response.data;
   }
 );
@@ -49,9 +50,9 @@ const taskSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // fetchTasks
       .addCase(fetchTasks.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchTasks.fulfilled, (state, action) => {
         state.loading = false;
@@ -61,17 +62,18 @@ const taskSlice = createSlice({
         state.loading = false;
         state.error = action.error.message;
       })
-      // addTask
       .addCase(addTask.fulfilled, (state, action) => {
         state.list.push(action.payload);
       })
-      // deleteTask
       .addCase(deleteTask.fulfilled, (state, action) => {
-        state.list = state.list.filter((t) => t.id !== action.payload);
+        state.list = state.list.filter(
+          (t) => t.id !== action.payload
+        );
       })
-      // updateTask
       .addCase(updateTask.fulfilled, (state, action) => {
-        const index = state.list.findIndex((t) => t.id === action.payload.id);
+        const index = state.list.findIndex(
+          (t) => t.id === action.payload.id
+        );
         if (index !== -1) {
           state.list[index] = action.payload;
         }
